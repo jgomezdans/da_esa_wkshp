@@ -1,36 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Da esa wkshp : eoldas_ng distribution for ESA Land DA workshop at UCL" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Da esa wkshp by jgomezdans</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Da esa wkshp</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Da esa wkshp</h1>
+        <p class="header">eoldas_ng distribution for ESA Land DA workshop at UCL</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/jgomezdans/da_esa_wkshp">View on GitHub</a>
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/jgomezdans/da_esa_wkshp/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/jgomezdans/da_esa_wkshp/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/jgomezdans/da_esa_wkshp">View On GitHub</a></li>
+        </ul>
 
-          <h1 id="project_title">Da esa wkshp</h1>
-          <h2 id="project_tagline">eoldas_ng distribution for ESA Land DA workshop at UCL</h2>
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/jgomezdans">jgomezdans</a></p>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/jgomezdans/da_esa_wkshp/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/jgomezdans/da_esa_wkshp/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+      </header>
+      <section>
         <h1>
 <a name="esa-land-da-workshop" class="anchor" href="#esa-land-da-workshop"><span class="octicon octicon-link"></span></a>ESA Land DA workshop</h1>
 
@@ -40,12 +39,13 @@
 
 <hr><p>We assume that you have numpy, scipy and matplotlib already installed (you can try Anaconda python to install the whole Python stack). Then, issue the following commands:</p>
 
-<pre><code>   pip install ~/SHARED/GomezDans/eoldas_ng-0.1.tar.gz \
-               --user --upgrade
+<pre><code>
+   pip install ~/SHARED/GomezDans/eoldas_ng-0.1.tar.gz \
+                --user --upgrade
    pip install ~/SHARED/GomezDans/prosail_fortran-1.1.0.tar.gz \
-               --user --upgrade
+                --user --upgrade
    pip install ~/SHARED/GomezDans/gp_emulator-1.2.tar.gz \
-               --user --upgrade
+                --user --upgrade
    ~/SHARED/GomezDans/test.py
    mkdir eoldas_tutorial
    cp ~/SHARED/GomezDans/*.txt eoldas_tutorial/
@@ -64,19 +64,29 @@
    ./GomezDans/test.py
 </code></pre>
 
+<h1>
+<a name="the-notebooks" class="anchor" href="#the-notebooks"><span class="octicon octicon-link"></span></a>The notebooks</h1>
+
+<p>You can find 4 notebooks for this tutorial: the first one is a presentation on <code>eoldas_ng</code>, the other three are simple tutorial like exercises that you can go through:</p>
+
+<ul>
+<li>The <a href="http://jgomezdans.github.io/da_esa_wkshp/eoldas_ng_pres.slides.html">presentation</a> (Also, the <a href="http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/eoldas_ng_pres.ipynb">notebook</a>)</li>
+<li>Example with univariate time series and identity operator <a href="http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/ASimpleSmoother.ipynb">notebook</a>
+</li>
+<li>Example showing spatial processing blending two different spatial resolutions <a href="http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/SpatialDAexample.ipynb">notebook</a>
+</li>
+<li>Example processing a time series of MODIS observations with a complex RT model <a href="http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/MODIS_tseries_ex.ipynb">notebook</a>
+</li>
+</ul><h1>
+<a name="contact" class="anchor" href="#contact"><span class="octicon octicon-link"></span></a>Contact</h1>
+
 <p>Any issues or comments, add an issue here on github, or send me an email on <code>j.gomez-dans@ucl.ac.uk</code>.</p>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Da esa wkshp maintained by <a href="https://github.com/jgomezdans">jgomezdans</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
-
-    
-
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
   </body>
 </html>
