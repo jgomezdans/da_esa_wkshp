@@ -14,8 +14,16 @@ We assume that you have numpy, scipy and matplotlib already installed (you can t
    pip install ~/SHARED/GomezDans/prosail_fortran-1.1.0.tar.gz --user --upgrade
    pip install ~/SHARED/GomezDans/gp_emulator-1.2.tar.gz --user --upgrade
    ~/SHARED/GomezDans/test.py
+   mkdir eoldas_tutorial
+   cp ~/SHARED/GomezDans/*.txt eoldas_tutorial/
+   cp ~/SHARED/GomezDans/*ipynb eoldas_tutorial/
+   cp ~/SHARED/GomezDans/*.npz eoldas_tutorial/
+   cd eoldas_tutorial
+   ipython notebook 
+   #
 
-You can probably just copy and paste those four lines into an UNIX terminal. Note that these commands will only work if you have an account on the UCL system, and an account with an username like `daesaXX`, where `XX` are two digits. In case you don't have that, you can get hold of the required packages by cloning the current repository with git, changing to that directory and issuing the following commands:
+
+You can probably just copy and paste those lines into an UNIX terminal. Note that these commands will only work if you have an account on the UCL system, and an account with an username like `daesaXX`, where `XX` are two digits. In case you don't have that, you can get hold of the required packages by cloning the current repository with git, changing to that directory and issuing the following commands:
 
 .. code::
 
