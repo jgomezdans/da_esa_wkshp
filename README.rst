@@ -32,4 +32,18 @@ You can probably just copy and paste those lines into an UNIX terminal. Note tha
    pip install ./gp_emulator-1.2.tar.gz --user --upgrade
    ./GomezDans/test.py
 
+
+The notebooks
+==================
+
+You can find 4 notebooks for this tutorial: the first one is a presentation on `eoldas_ng`, the other three are simple tutorial like exercises that you can go through:
+
+* The presentation `presentation <http://jgomezdans.github.io/da_esa_wkshp/eoldas_ng_pres.slides.html>`_ `notebook  <http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/eoldas_ng_pres.ipynb>`_
+* Example with univariate time series and identity operator `notebook <http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/ASimpleSmoother.ipynb>`_
+* Example showing spatial processing blending two different spatial resolutions `notebook <http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/SpatialDAexample.ipynb>`_
+* Example processing a time series of MODIS observations with a complex RT model `notebook <http://nbviewer.ipython.org/github/jgomezdans/da_esa_wkshp/blob/master/MODIS_tseries_ex.ipynb>`_
+
+Contact
+*********
+
 Any issues or comments, add an issue here on github, or send me an email on `j.gomez-dans@ucl.ac.uk`.
