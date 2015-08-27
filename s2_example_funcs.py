@@ -179,7 +179,7 @@ def create_observations2 ( state, parameter_grid, latitude, longitude, the_time=
         rho[:, i] = np.array ( [r[ band_pass[ii,:]].sum()/bw[ii] \
             for ii in xrange(n_bands) ] )
         rho[:, i] = np.clip (rho[:, i] + np.random.randn ( n_bands )*sigma_obs, 1e-4, 0.999)
-        emulator_name = os.path.join ( emu_dir, "%03.1f_%03.1f_%03.1f_prosail.npz" % ( sza, vza, raa ) ) 
+        emulator_name = os.path.join ( emu_dir, "%03.1f_%03.1f_%03.1f_prosail.npz" % ( sza[i], vza[i], raa[i] ) ) 
         if not os.path.exists ( emulator_name ):
             gp = create_prosail_emulators ( sza, vza, raa )
             gp.dump_emulator ( emulator_name )
