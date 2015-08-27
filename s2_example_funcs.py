@@ -187,72 +187,7 @@ def create_observations2 ( state, parameter_grid, latitude, longitude, the_time=
             gp = create_prosail_emulators ( sza, vza, raa )
             gp.dump_emulator ( emulator_name )
     return obs_doys, vza, sza, raa, rho, sigma_obs     
-    
-def create_observations___OLD ( state, parameter_grid, latitude, longitude, the_time="10:30", \
-        b_min = np.array( [ 620., 841, 459, 545, 1230, 1628, 2105] ), \
-        b_max = np.array( [ 670., 876, 479, 565, 1250, 1652, 2155] ), \
-        every=5, prop=0.4, WINDOW=3, noise_scalar=1):
-    """This function creates the observations for  a given temporal evolution
-    of parameters, loation, and bands. By default, we take only MODIS bands. 
-    The function does a number of other things:
-    1.- Calculate missing observations due to simulated cloud
-    2.- Add noise
-    TODO: There's a problem  with pyephem, gives silly solar altitudes!!!"""
-    wv = np.arange ( 400, 2501 )
-    n_bands = b_min.shape[0]
-    band_pass = np.zeros(( n_bands,2101), dtype=np.bool)
-    bw = np.zeros( n_bands )
-    bh = np.zeros( n_bands )
-    for i in xrange( n_bands ):
-        band_pass[i,:] = np.logical_and ( wv >= b_min[i], \
-                wv <= b_max[i] )
-        bw[i] = b_max[i] - b_min[i]
-        bh[i] = ( b_max[i] + b_min[i] )/2.
-    o = ephem.Observer()
-    o.lat, o.long, o.date = latitude, longitude, "2011/1/1 %s"%the_time
-    dd = o.date
 
-    t = np.arange ( 1, 366 )
-    obs_doys = np.array ( [ i for i in t if i % every == 0 ] )
-    
-
-    #prop = 0.4
-    #WINDOW = 3
-    weightings = np.repeat(1.0, WINDOW) / WINDOW
-    
-    xx = np.convolve(np.random.rand(len(t)*100),weightings,'valid')[WINDOW:WINDOW+len(t)]
-
-    maxx = sorted(xx)[:int(len(xx)*prop)]
-    mask = np.in1d(xx,maxx)
-    doys_nocloud = t[mask]
-    x = np.in1d ( obs_doys, doys_nocloud )
-    obs_doys = obs_doys[x]
-    vza = np.zeros_like ( obs_doys, dtype=np.float)
-    sza = np.zeros_like ( obs_doys, dtype=np.float)
-    raa = np.zeros_like ( obs_doys, dtype=np.float)
-    rho = np.zeros (( len(bw), obs_doys.shape[0] ))
-    sigma_obs = (0.01-0.004)*(bh-bh.min())/(bh.max()-bh.min())
-    sigma_obs += 0.004
-    sigma_obs = sigma_obs * noise_scalar
-    S = np.array([22, 37, 52, 60])
-    for i,doy in enumerate(obs_doys):
-        j = doy - 1 # location in parameter_grid...
-        vza[i] = 8#np.random.rand(1)*15. # 15 degs 
-        o.date = dd + doy
-        sun = ephem.Sun ( o )
-        xx = 90. - float(sun.alt )*180./np.pi
-        sza[i] = S[np.argmin ( np.abs ( xx-S))]
-        vaa = np.random.rand(1)*360.
-        saa = np.random.rand(1)*360.
-        raa[i] = 0.0#vaa - saa
-        p = np.r_[parameter_grid[:8,j],0,parameter_grid[8:, j], 0.01,sza[i], vza[i], raa[i], 2 ]
-        
-        r =  fixnan( np.atleast_2d ( prosail.run_prosail ( *p )) ).squeeze()
-        rho[:, i] = np.array ( [r[ band_pass[ii,:]].sum()/bw[ii] \
-            for ii in xrange(n_bands) ] )
-        rho[:, i] += np.random.randn ( n_bands )*sigma_obs
-        rho[:, i] = np.clip ( rho[:,i], 1e-4, 0.9999)
-    return obs_doys, vza, sza, raa, rho, sigma_obs 
 
 def dbl_logistic_model ( p, x ):
     """A double logistic model, as in Sobrino and Juliean, or Zhang et al"""
@@ -440,23 +375,13 @@ def create_prosail_emulators ( sza, vza, raa ):
     pool.join()
     rho_train = np.array ( rho_train )
 
-#    validate_set = gp_emulator.create_validation_set( distributions )
-#    pool = multiprocessing.Pool()
-#    partial_do_fwd_model = partial ( do_fwd_model, sza=sza, vza=vza, raa=raa )
-#    rho_validate = pool.map ( partial_do_fwd_model, validate_set )
-#    pool.close()
-#    pool.join()
-#    rho_validate = np.array ( rho_validate )
+    validate_set = gp_emulator.create_validation_set( distributions )
+    pool = multiprocessing.Pool()
+    partial_do_fwd_model = partial ( do_fwd_model, sza=sza, vza=vza, raa=raa )
+    rho_validate = pool.map ( partial_do_fwd_model, validate_set )
+    pool.close()
+    pool.join()
+    rho_validate = np.array ( rho_validate )
     
-    ###for p in training_set:
-        ###rho_train.append ( do_fwd_model( p, sza, vza, raa ))
-    ###rho_train = np.array ( rho_train )
-
-    ###rho_validate = []
-    ###for p in validate_set:
-        ###rho_validate.append ( do_fwd_model( p, sza, vza, raa ))
-        
-    ###rho_validate = np.array ( rho_validate )
-
     gp = gp_emulator.MultivariateEmulator( X=rho_train, y=training_set, thresh=0.95 )
     return gp
