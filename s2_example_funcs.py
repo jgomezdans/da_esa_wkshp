@@ -179,8 +179,11 @@ def create_observations2 ( state, parameter_grid, latitude, longitude, the_time=
         rho[:, i] = np.array ( [r[ band_pass[ii,:]].sum()/bw[ii] \
             for ii in xrange(n_bands) ] )
         rho[:, i] = np.clip (rho[:, i] + np.random.randn ( n_bands )*sigma_obs, 1e-4, 0.999)
-        emulator_name = os.path.join ( emu_dir, "%03.1f_%03.1f_%03.1f_prosail.npz" % ( sza[i], vza[i], raa[i] ) ) 
+        srza = float(int(sza[i]) - (int(sza[i])%5))
+        vrza = float(int(vza[i]) - (int(vza[i])%5))
+        emulator_name = os.path.join ( emu_dir, "%03.1f_%03.1f_%03.1f_prosail.npz" % ( srza, vrza, raa[i] ) ) 
         if not os.path.exists ( emulator_name ):
+            print "Creating emulator for %s" % emulator_name
             gp = create_prosail_emulators ( sza, vza, raa )
             gp.dump_emulator ( emulator_name )
     return obs_doys, vza, sza, raa, rho, sigma_obs     
@@ -427,7 +430,7 @@ def create_prosail_emulators ( sza, vza, raa ):
                 0.03651617,  0.04978707,  0.44444444,  0.        ,  0.]
     max_vals = [ 2.5       ,  0.998002  ,  1.        ,  1.        ,  0.80654144,
                 0.84366482,  0.99501248,  0.55555556,  2.   , 1     ]
-    training_set, distributions = gp_emulator.create_training_set ( parameters, min_vals, max_vals, n_train=200 )
+    training_set, distributions = gp_emulator.create_training_set ( parameters, min_vals, max_vals, n_train=150 )
 
     rho_train = []
     pool = multiprocessing.Pool()
@@ -437,13 +440,13 @@ def create_prosail_emulators ( sza, vza, raa ):
     pool.join()
     rho_train = np.array ( rho_train )
 
-    validate_set = gp_emulator.create_validation_set( distributions )
-    pool = multiprocessing.Pool()
-    partial_do_fwd_model = partial ( do_fwd_model, sza=sza, vza=vza, raa=raa )
-    rho_validate = pool.map ( partial_do_fwd_model, validate_set )
-    pool.close()
-    pool.join()
-    rho_validate = np.array ( rho_validate )
+#    validate_set = gp_emulator.create_validation_set( distributions )
+#    pool = multiprocessing.Pool()
+#    partial_do_fwd_model = partial ( do_fwd_model, sza=sza, vza=vza, raa=raa )
+#    rho_validate = pool.map ( partial_do_fwd_model, validate_set )
+#    pool.close()
+#    pool.join()
+#    rho_validate = np.array ( rho_validate )
     
     ###for p in training_set:
         ###rho_train.append ( do_fwd_model( p, sza, vza, raa ))
