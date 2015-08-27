@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-
+import os
 import glob
 import json
+import multiprocessing
 import numpy as np
 import matplotlib.pyplot as plt
 import ephem
+from functools import partial
 
 import prosail
 import gp_emulator
@@ -115,7 +117,7 @@ def pretty_axes( ax ):
 def create_observations2 ( state, parameter_grid, latitude, longitude, the_time="10:30",\
         b_min = np.array( [ 620., 841, 459, 545, 1230, 1628, 2105] ), \
         b_max = np.array( [ 670., 876, 479, 565, 1250, 1652, 2155] ), \
-        every=5, prop=0.4, WINDOW=3, noise_scalar=1, vza_var=7.):
+        every=5, prop=0.4, WINDOW=3, noise_scalar=1, vza_var=7., emu_dir="./"):
     """This function creates the observations for  a given temporal evolution
     of parameters, loation, and bands. By default, we take only MODIS bands. 
     The function does a number of other things:
@@ -177,6 +179,10 @@ def create_observations2 ( state, parameter_grid, latitude, longitude, the_time=
         rho[:, i] = np.array ( [r[ band_pass[ii,:]].sum()/bw[ii] \
             for ii in xrange(n_bands) ] )
         rho[:, i] = np.clip (rho[:, i] + np.random.randn ( n_bands )*sigma_obs, 1e-4, 0.999)
+        emulator_name = os.path.join ( emu_dir, "%03.1f_%03.1f_%03.1f_prosail.npz" % ( sza, vza, raa ) ) 
+        if not os.path.exists ( emulator_name ):
+            gp = create_prosail_emulators ( sza, vza, raa )
+            gp.dump_emulator ( emulator_name )
     return obs_doys, vza, sza, raa, rho, sigma_obs     
     
 def create_observations___OLD ( state, parameter_grid, latitude, longitude, the_time="10:30", \
@@ -316,14 +322,8 @@ def grab_emulators2 ( vza, sza, raa, emulator_home="/home/jose/emulator/"):
                                 float(f.split("/")[-1].split("_")[3])] = f
     # So we have a dictionary inddexed by SZA, VZA and RAA and mapping to a filename
     # Remove some weirdos...
-    #for k in emulator_search_dict.keys():
-    #    if (k[1] - int(k[1]) ) != 0.:
-    #        emulator_search_dict.pop ( k )
     emu_keys = np.array( emulator_search_dict.keys() )
         
-    #emu_locs = [np.argmin(np.sum((emu_keys[:,:2] - \
-    #                                 np.array([sza[i], vza[i]]))**2,axis=1)) \
-    #             for i in xrange(len(doys)) ]
     emu_locs = [np.sum((emu_keys[:,:2] - \
                                    np.array([sza[i], vza[i]]))**2,axis=1) \
                     for i in xrange(vza.shape[0])]
@@ -396,3 +396,64 @@ def spectral_configuration():
            olci_bh, olci_n_bands, olci_b_min, olci_b_max, olci_band_pass
     
     
+def inverse_transform ( x ):
+    """Inverse transform the PROSAIL parameters"""
+    x_out = x*1.
+    # Cab, posn 1
+    x_out[1] = -100.*np.log ( x[1] )
+    # Cab, posn 2
+    x_out[2] = -100.*np.log ( x[2] )
+    # Cw, posn 4
+    x_out[4] = (-1./50.)*np.log ( x[4] )
+    #Cm, posn 5
+    x_out[5] = (-1./100.)*np.log ( x[5] )
+    # LAI, posn 6
+    x_out[6] = -2.*np.log ( x[6] )
+    # ALA, posn 7
+    x_out[7] = 90.*x[7]
+    return x_out
+
+
+def do_fwd_model ( x, sza, vza, raa ):
+    x = inverse_transform ( x )
+    ################# surface refl with prosail #####################
+    surf_refl = prosail.run_prosail(x[0], x[1], x[2], x[3], \
+        x[4], x[5], x[6], x[7], 0, x[8], x[9], 0.01, sza, vza, raa, 2 )
+    return surf_refl
+
+def create_prosail_emulators ( sza, vza, raa ):
+    parameters = [ 'n', 'cab', 'car', 'cbrown', 'cw', 'cm', 'lai', 'ala', 'bsoil', 'psoil']
+    min_vals = [ 0.8       ,  0.46301307,  0.95122942,  0.        ,  0.02829699,
+                0.03651617,  0.04978707,  0.44444444,  0.        ,  0.]
+    max_vals = [ 2.5       ,  0.998002  ,  1.        ,  1.        ,  0.80654144,
+                0.84366482,  0.99501248,  0.55555556,  2.   , 1     ]
+    training_set, distributions = gp_emulator.create_training_set ( parameters, min_vals, max_vals, n_train=200 )
+
+    rho_train = []
+    pool = multiprocessing.Pool()
+    partial_do_fwd_model = partial ( do_fwd_model, sza=sza, vza=vza, raa=raa )
+    rho_train = pool.map ( partial_do_fwd_model, training_set )
+    pool.close()
+    pool.join()
+    rho_train = np.array ( rho_train )
+
+    validate_set = gp_emulator.create_validation_set( distributions )
+    pool = multiprocessing.Pool()
+    partial_do_fwd_model = partial ( do_fwd_model, sza=sza, vza=vza, raa=raa )
+    rho_validate = pool.map ( partial_do_fwd_model, validate_set )
+    pool.close()
+    pool.join()
+    rho_validate = np.array ( rho_validate )
+    
+    ###for p in training_set:
+        ###rho_train.append ( do_fwd_model( p, sza, vza, raa ))
+    ###rho_train = np.array ( rho_train )
+
+    ###rho_validate = []
+    ###for p in validate_set:
+        ###rho_validate.append ( do_fwd_model( p, sza, vza, raa ))
+        
+    ###rho_validate = np.array ( rho_validate )
+
+    gp = gp_emulator.MultivariateEmulator( X=rho_train, y=training_set, thresh=0.95 )
+    return gp
